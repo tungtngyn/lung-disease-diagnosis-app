@@ -26,11 +26,15 @@ labels = {
     14: 'Pneumothorax'
     }
 
+@st.cache()
+def load_cache_model(path):
+    return load_model(path)
+
 
 if __name__ == '__main__':
     
     # Load and cache model
-    model = load_model(Path('./ucsd-mle-dl-prototype'))
+    model = load_cache_model(Path('./ucsd-mle-dl-prototype'))
 
     # Streamlit GUI
     st.title('Demo - Lung Disease Diagnosis')
@@ -42,7 +46,7 @@ if __name__ == '__main__':
     This model utilizes transfer learning, with a base DenseNet architecture pre-trained on ImageNet images. It is then further trained on [this dataset](https://www.kaggle.com/nih-chest-xrays/data).
 
 
-    Download sample Chest X-Ray images from this [Github repo](https://github.com/tungtngyn/mec-capstone/tree/main/Deployment/imgs) (along with their true labels) and test it out here!
+    Download sample Chest X-Ray images from this [Github repo](https://github.com/tungtngyn/streamlit-apps/tree/main/imgs) (along with their true labels) and test it out here!
 
     An example is pre-loaded below. The default classification threshold is set to 0.5, though should be optimized based on domain knowledge if this were a real deployment.
     """)
