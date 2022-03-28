@@ -26,7 +26,7 @@ labels = {
     14: 'Pneumothorax'
     }
 
-@st.cache()
+@st.cache(allow_output_mutation=True)
 def load_cache_model(path):
     return load_model(path)
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     Download sample Chest X-Ray images from this [Github repo](https://github.com/tungtngyn/streamlit-apps/tree/main/imgs) (along with their true labels) and test it out here!
 
-    An example is pre-loaded below. The default classification threshold is set to 0.5, though should be optimized based on domain knowledge if this were a real deployment.
+    An example is pre-loaded below. The default classification threshold is set to 0.5, though this should be optimized based on domain knowledge if this were a real deployment.
     """)
 
     file = st.file_uploader('Upload an image')
