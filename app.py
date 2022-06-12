@@ -6,8 +6,8 @@ from PIL import Image
 from pathlib import Path
 
 from tensorflow.keras.utils import img_to_array
-from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.densenet import preprocess_input
+from tensorflow.keras.applications.xception import preprocess_input
+from tensorflow.keras.models import model_from_json
 
 labels = {
     1: 'Atelectasis',
@@ -27,14 +27,26 @@ labels = {
     }
 
 @st.cache(allow_output_mutation=True)
-def load_cache_model(path):
-    return load_model(path)
+def load_cache_model(config_path, weights_path):
+
+    # Load model config
+    with open(config_path, mode='r') as f:
+        arr = f.readlines()
+
+    json_str = arr[0].replace('\\', '')[1:-1]
+
+    new_model = model_from_json(json_str)
+
+    # Load Weights
+    new_model.load_weights(weights_path)
+
+    return new_model
 
 
 if __name__ == '__main__':
-    
+
     # Load and cache model
-    model = load_cache_model(Path('./ucsd-mle-dl-prototype'))
+    model = load_cache_model(Path(r'./model_files/model-8b-config.json'), Path(r'./model_files/model-8b-weights.h5'))
 
     # Streamlit GUI
     st.title('Demo - Lung Disease Diagnosis')
@@ -43,12 +55,14 @@ if __name__ == '__main__':
 
     This demo is a deep learning model capable of predicting 14 different lung diseases given a Chest X-Ray image.
 
-    This model utilizes transfer learning, with a base DenseNet architecture pre-trained on ImageNet images. It is then further trained on [this dataset](https://www.kaggle.com/nih-chest-xrays/data).
+    This model utilizes transfer learning, with a base Xception architecture pre-trained on ImageNet images. It is then further trained on [this dataset](https://www.kaggle.com/nih-chest-xrays/data).
 
 
-    Download sample Chest X-Ray images from this [Github repo](https://github.com/tungtngyn/streamlit-apps/tree/main/imgs) (along with their true labels) and test it out here!
+    Download sample Chest X-Ray images from this [Github repo](https://github.com/tungtngyn/lung-disease-diagnosis-app/tree/main/imgs) and test it out here! The image names are their true labels.
 
-    An example is pre-loaded below. The default classification threshold is set to 0.5, though this should be optimized based on domain knowledge if this were a real deployment.
+    An example is pre-loaded below. The default classification threshold is set to 0.5, though this would be optimized based on domain knowledge if this were a real deployment.
+
+    Note: This app looks better in light-mode! 
     """)
 
     file = st.file_uploader('Upload an image')
@@ -79,11 +93,11 @@ if __name__ == '__main__':
     for i, v in enumerate(predictions[0]):
         pred[labels[i+1]] = [float(v*100)]
 
-    df = pd.DataFrame.from_dict(pred, orient='index', columns=['Probability'])
+    df = pd.DataFrame.from_dict(pred, orient='index', columns=['Probability (%)'])
     
     fig, ax = plt.subplots()
     y = np.arange(len(df.index))
-    probs = df.Probability.values
+    probs = df['Probability (%)'].values
 
     cc=list(map(lambda p: 'midnightblue' if p <= 50 else 'red', probs))
     p1 = ax.barh(y, probs, color=cc);
